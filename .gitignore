@@ -1,0 +1,11 @@
+# AnyTone's firmware and anything built from it: never commit
+*.CDD
+*.CDI
+*.spi
+stock/
+build/
+patched_*/
+*.wav
+__pycache__/
+.venv/
+DECtalkMini/

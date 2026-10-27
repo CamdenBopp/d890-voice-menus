@@ -87,6 +87,28 @@ a word decoder to that interrupt, and speaks the text of the menu row the cursor
 | `tools/flash_firmware_d890.py` | Main-board flasher |
 | `tools/item_probe.py`, `tools/menu_diag.py`, `tools/anytone_readonly_dump.py` | Live menu-state probe and read-only memory reads over USB |
 
+## DMR voice-frame tap (research)
+
+A later line of work taps received DMR voice off the SCT3288 baseband and streams the raw
+AMBE+2 frames off the radio over USB, in normal mode, with the UI live (no programming mode).
+The main board's CHAN_D handler copies 36 bytes per packet — four on-air AMBE+2 frames — into a
+RAM ring the patch exposes; a host poller reads them with the stock `R` read. On-air tests
+streamed a received call complete (0 dropped, 0 FEC errors) once the capture read the full 36
+bytes rather than truncating to three frames. [D890_dmr_voice_frames.md](D890_dmr_voice_frames.md)
+is the full record, with addresses and the dead ends.
+
+| File | Purpose |
+|---|---|
+| `make_d890_rxstream2_firmware.py` | The working tap: writes each 36-byte CHAN_D (4 frames) to a SRAM ring |
+| `make_d890_rxstream_firmware.py` | First streaming build (capped at 27 bytes; superseded) |
+| `make_d890_rxtap3_firmware.py`, `make_d890_rxtap2_firmware.py`, `make_d890_dmrdiag_firmware.py`, `make_d890_dmrtap_firmware.py`, `make_d890_dmrframes_firmware.py` | Diagnostic builds that mapped the receive path |
+| `make_d890_rxwide_firmware.py` | RX frequency-range experiment (reverted; hardware tops ~520 MHz) |
+| `stream_rxframes2.py`, `stream_rxframes.py` | Host pollers that read the ring live over USB |
+| `read_rxtap3_diag.py`, `dmr_diag_listen.py`, `dmr_frames_listen.py` | USB / BLE diagnostic readers |
+
+The HackRF DMR transmitter and the software AMBE+2 encoder/decoder used to exercise this path
+are kept in a separate toolchain and are not included here.
+
 ## Credits and license
 
 - `tools/flash_firmware_d890.py` is from
